@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog alert=builder.create();
         builder.show();
     }
-    public void editComic(String id){
+    public void editComic(String id,Comic comic){
         dialog=new Dialog(MainActivity.this);
         dialog.setContentView(R.layout.dialog_themcomic);
         edName=dialog.findViewById(R.id.edname);
@@ -145,6 +145,12 @@ public class MainActivity extends AppCompatActivity {
         edImage=dialog.findViewById(R.id.edimage);
         btnCancel=dialog.findViewById(R.id.btnCancel);
         btnSave=dialog.findViewById(R.id.btnSave);
+
+
+        edName.setText(comic.getName());
+        edTitle.setText(comic.getTitle());
+        edChapter.setText(comic.getChapter());
+        edImage.setText(comic.getImage());
 
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -159,6 +165,8 @@ public class MainActivity extends AppCompatActivity {
                 String title=edTitle.getText().toString();
                 String chapter=edChapter.getText().toString();
                 String image=edImage.getText().toString();
+
+
 
                 Comic comic=new Comic(title,name,chapter,image);
                 Call<Comic> call=comicService.updateComic(id,comic);

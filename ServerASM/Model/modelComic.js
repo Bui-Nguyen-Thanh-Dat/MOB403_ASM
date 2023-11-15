@@ -9,6 +9,10 @@ title:{
     type: String,
     require: true
 },
+image:{
+    type: String,
+    require: true
+},
 chapter:{
     type: String,
     require: true

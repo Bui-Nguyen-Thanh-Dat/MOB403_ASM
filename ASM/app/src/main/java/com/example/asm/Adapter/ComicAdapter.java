@@ -59,7 +59,7 @@ public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> 
         holder.imgEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                   mainActivity.editComic(comic.getId());
+                   mainActivity.editComic(comic.getId(),comic);
             }
         });
 
