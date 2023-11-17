@@ -28,7 +28,9 @@ router.post('/', async (req, res) => {
     try {
         const newComic= new Comic(req.body);
         const comic = await newComic.save();
-        res.status(201).json(comic);
+
+        let comics = await Comic.find();
+        res.status(201).json(comics);
       } catch (err) {
         res.status(400).json({ message: err.message });
       }

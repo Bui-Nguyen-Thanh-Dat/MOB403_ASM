@@ -63,8 +63,10 @@ public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> 
             }
         });
 
+        if (!comic.getImage().trim().equals("")) {
+            Picasso.get().load(comic.getImage()).into(holder.thumbnailImageView);
+        }
 
-        Picasso.get().load(comic.getImage()).into(holder.thumbnailImageView);
 
     }
 

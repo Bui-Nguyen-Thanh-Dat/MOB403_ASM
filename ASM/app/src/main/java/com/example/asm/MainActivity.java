@@ -218,12 +218,18 @@ public class MainActivity extends AppCompatActivity {
                 String image=edImage.getText().toString();
 
                 Comic comic=new Comic(title,name,chapter,image);
-                Call<Comic> call=comicService.postComic(comic);
-                call.enqueue(new Callback<Comic>() {
+                Call<List<Comic>> call=comicService.postComic(comic);
+
+                call.enqueue(new Callback<List<Comic>>() {
                     @Override
-                    public void onResponse(Call<Comic> call, Response<Comic> response) {
+                    public void onResponse(Call<List<Comic>> call, Response<List<Comic>> response) {
                         if (response.isSuccessful()){
-                            loadData();
+                            //loadData();
+                            List<Comic> comicList=response.body();
+                            comicAdapter.setComicList(comicList);
+                            Log.e("e", "Photo...." + comicList);
+                            comicAdapter.notifyDataSetChanged();
+
                             Toast.makeText(getApplicationContext(),"Them comic thanh cong",Toast.LENGTH_LONG).show();
                             dialog.dismiss();
                         }else {
@@ -232,10 +238,11 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onFailure(Call<Comic> call, Throwable t) {
+                    public void onFailure(Call<List<Comic>> call, Throwable t) {
 
                     }
                 });
+
             }
         });
         dialog.show();
