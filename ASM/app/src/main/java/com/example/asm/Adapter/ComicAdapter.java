@@ -11,6 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.asm.MainActivity;
 import com.example.asm.Model.Comic;
 import com.example.asm.R;
@@ -63,9 +64,17 @@ public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> 
             }
         });
 
-        if (!comic.getImage().trim().equals("")) {
+        if (!comic.getImage().equals("")){
             Picasso.get().load(comic.getImage()).into(holder.thumbnailImageView);
         }
+
+//            Glide.with(mainActivity)
+//                    .load(comic.getImage())
+//                    .placeholder(R.drawable.ic_launcher_background)
+//                    .error(R.drawable.ic_launcher_background)
+//                    .into(holder.thumbnailImageView);
+
+
 
 
     }

@@ -16,7 +16,8 @@ mongoose.connect(uri,{
 var apicomic= require('./Api/apiComic');
 app.use('/api/comic',apicomic);
 
-
+var apiUser=require('./Api/apiUser');
+app.use('/api/user',apiUser);
 
 app.listen(8000,function() {
     console.log("Server is running on port 8000");
