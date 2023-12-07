@@ -15,24 +15,18 @@ public class Comic {
     String chapter;
     @SerializedName("image")
     String image;
-
+    @SerializedName("status")
+    int status;
 
     public Comic() {
     }
 
-    public Comic(String title, String name, String chapter,String image) {
-        this.image=image;
+    public Comic(String title, String name, String chapter, String image, int status) {
         this.title = title;
         this.name = name;
         this.chapter = chapter;
-    }
-
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
         this.image = image;
+        this.status = status;
     }
 
     public String getId() {
@@ -43,16 +37,16 @@ public class Comic {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
-    }
-
     public String getTitle() {
         return title;
     }
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public void setName(String name) {
@@ -67,6 +61,22 @@ public class Comic {
         this.chapter = chapter;
     }
 
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
         return "Comic{" +
@@ -74,6 +84,7 @@ public class Comic {
                 ", title='" + title + '\'' +
                 ", name='" + name + '\'' +
                 ", image='" + image + '\'' +
+                ", status='" + status + '\'' +
                 ", chapter=" + chapter +
                 '}';
     }

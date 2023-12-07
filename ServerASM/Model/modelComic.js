@@ -16,7 +16,12 @@ image:{
 chapter:{
     type: String,
     require: true
+},
+status:{
+    type:Number,
+    require:true
 }
+
 });
 const Comic= mongoose.model('comic',ComicSchema);
 module.exports=Comic;

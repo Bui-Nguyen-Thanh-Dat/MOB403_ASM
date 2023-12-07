@@ -19,30 +19,43 @@
         android:layout_height="wrap_content"
         android:hint="chapter"
         android:id="@+id/edchapter"/>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:paddingRight="200dp"
+        android:src="@drawable/ic_launcher_background"
+        android:id="@+id/img_image"/>
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="image"
-        android:id="@+id/edimage"/>
+        android:hint="status"
+        android:id="@+id/edstatus"/>
+
+
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        >
+        android:orientation="horizontal">
+
         <Button
             android:id="@+id/btnSave"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Lưu"
             android:layout_marginHorizontal="20dp"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+             />
+
         <Button
             android:id="@+id/btnCancel"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Hủy"
             android:layout_marginHorizontal="20dp"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+             />
+
     </LinearLayout>
 </LinearLayout>

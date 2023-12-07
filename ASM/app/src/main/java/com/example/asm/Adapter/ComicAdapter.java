@@ -49,6 +49,7 @@ public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> 
         holder.titleTextView.setText(comic.getTitle());
         holder.tvname.setText(String.valueOf(comic.getName()));
         holder.tvchapter.setText(comic.getChapter());
+//        if (comic.getStatus())
 
         holder.imgDelete.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,6 +69,12 @@ public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> 
             Picasso.get().load(comic.getImage()).into(holder.thumbnailImageView);
         }
 
+        if (comic.getStatus()==0){
+            holder.tvstatus.setText("Dang hoc");
+        }else {
+            holder.tvstatus.setText("Da hoc xong");
+        }
+
 //            Glide.with(mainActivity)
 //                    .load(comic.getImage())
 //                    .placeholder(R.drawable.ic_launcher_background)
@@ -85,7 +92,7 @@ public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> 
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
-        public TextView tvname,tvchapter;
+        public TextView tvname,tvchapter,tvstatus;
         public TextView titleTextView;
         public ImageView thumbnailImageView;
         public ImageView imgDelete,imgEdit;
@@ -98,6 +105,7 @@ public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> 
             tvchapter=itemView.findViewById(R.id.tvchapter);
             imgDelete=itemView.findViewById(R.id.imgDeleteS);
             imgEdit=itemView.findViewById(R.id.imgEdit);
+            tvstatus=itemView.findViewById(R.id.tvstatus);
         }
     }
 

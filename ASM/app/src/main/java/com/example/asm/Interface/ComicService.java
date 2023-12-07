@@ -17,7 +17,7 @@ public interface ComicService {
     Call<List<Comic>> getComic();
 
     @POST("api/comic/")
-    Call<List<Comic>> postComic(@Body Comic comic);
+    Call<List<Comic>> addComic(@Body Comic comic);
 
     @DELETE("api/comic/{id}")
     Call<Void> deleteComic(@Path("id") String id);

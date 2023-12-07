@@ -4,11 +4,38 @@ var app = express();
 const Comic = require('../Model/modelComic');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const fs=require("fs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+const multer= require('multer');
 
 // const imagePath='./uploads';
 // app.use('/uploads',express.static(imagePath));
+
+var storage=multer.diskStorage({
+  destination: function (req,file,cb) {
+     var dir='./uploads';
+     if(!fs.existsSync(dir)){
+      fs.mkdirSync(dir,{recursive:true});
+     }
+     cb(null,'./uploads')
+  },
+  filename:function (req,file,cb) {
+    let fileName=file.originalname;
+    arr=fileName.split('.');
+    let newFileName='';
+    for (let i = 0; i < arr.length; i++) {
+      if (i!=arr.length -1) {
+        newFileName+=arr[i];
+      }else{
+        newFileName += ('-'+Date.now()+'.'+arr[i]);
+      }
+    }
+    cb(null,newFileName)
+  }
+})
+
+const upload = multer({ storage: storage });
 
 const uri='mongodb+srv://datbntph19949:thanhdat12345@cluster0.8at6t1m.mongodb.net/comic';
 
@@ -27,7 +54,7 @@ router.post('/', async (req, res) => {
     await mongoose.connect(uri);
     try {
         const newComic= new Comic(req.body);
-        const comic = await newComic.save();
+        await newComic.save();
 
         let comics = await Comic.find();
         res.status(201).json(comics);
@@ -39,7 +66,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     await mongoose.connect(uri);
     const comicId = req.params.id;
-    const updatedComic = req.body;
+    const updatedComic =req.body;
     try {
       const comic = await Comic.findByIdAndUpdate(comicId, updatedComic, { new: true });
       res.json(comic);

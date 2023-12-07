@@ -2,7 +2,7 @@ package com.example.asm;
 
 import static com.example.asm.RetrofitRequest.getRetrofit;
 
-import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -12,31 +12,35 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.drawable.ColorDrawable;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.asm.Adapter.ComicAdapter;
 import com.example.asm.Interface.ComicService;
-import com.example.asm.Interface.UserService;
 import com.example.asm.Model.Comic;
-import com.example.asm.Model.User;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.squareup.picasso.Picasso;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -48,19 +52,21 @@ public class MainActivity extends AppCompatActivity {
     private ComicService comicService;
     FloatingActionButton fab;
     Dialog dialog;
-    UserService userService;
-    User user=new User();
+    Uri selectedImageUri;
+    String imagePath;
 
-    EditText edName,edTitle,edChapter,edImage,edt_mkcu,edt_mkmoi,edt_nhaplaimk;
+    EditText edName,edTitle,edChapter,edt_status,edt_mkmoi,edt_nhaplaimk;
     Button btnSave,btnCancel;
     String oldpassword,newpassword,renewpass;
     String email,password;
+    ImageView img_image;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        comicService=getRetrofit().create(ComicService.class);
 
         fab=findViewById(R.id.fab);
         recyclerView=findViewById(R.id.recyclerview);
@@ -84,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void loadData(){
-        comicService=getRetrofit().create(ComicService.class);
+
         Call<List<Comic>> call=comicService.getComic();
 
         call.enqueue(new Callback<List<Comic>>() {
@@ -150,13 +156,15 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog alert=builder.create();
         builder.show();
     }
+
     public void editComic(String id,Comic comic){
         dialog=new Dialog(MainActivity.this);
         dialog.setContentView(R.layout.dialog_themcomic);
         edName=dialog.findViewById(R.id.edname);
         edTitle=dialog.findViewById(R.id.edtitle);
         edChapter=dialog.findViewById(R.id.edchapter);
-        edImage=dialog.findViewById(R.id.edimage);
+        img_image=dialog.findViewById(R.id.img_image);
+        edt_status=dialog.findViewById(R.id.edstatus);
         btnCancel=dialog.findViewById(R.id.btnCancel);
         btnSave=dialog.findViewById(R.id.btnSave);
 
@@ -164,7 +172,22 @@ public class MainActivity extends AppCompatActivity {
         edName.setText(comic.getName());
         edTitle.setText(comic.getTitle());
         edChapter.setText(comic.getChapter());
-        edImage.setText(comic.getImage());
+        if (comic.getImage()!=null){
+            Picasso.get().load(comic.getImage()).into(img_image);
+        }
+
+        edt_status.setText(String.valueOf(comic.getStatus()));
+
+
+
+        img_image.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/*");
+                startActivityForResult(intent, 1);
+            }
+        });
 
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -178,11 +201,15 @@ public class MainActivity extends AppCompatActivity {
                 String name=edName.getText().toString();
                 String title=edTitle.getText().toString();
                 String chapter=edChapter.getText().toString();
-                String image=edImage.getText().toString();
+                String image="";
+                int status=Integer.parseInt(edt_status.getText().toString());
+
+                if (selectedImageUri!=null){
+                    image=String.valueOf(selectedImageUri);
+                }
 
 
-
-                Comic comic=new Comic(title,name,chapter,image);
+                Comic comic=new Comic(title,name,chapter,image,status);
                 Call<Comic> call=comicService.updateComic(id,comic);
                 call.enqueue(new Callback<Comic>() {
                     @Override
@@ -210,12 +237,20 @@ public class MainActivity extends AppCompatActivity {
         dialog.setContentView(R.layout.dialog_themcomic);
         edName=dialog.findViewById(R.id.edname);
         edTitle=dialog.findViewById(R.id.edtitle);
-        edImage=dialog.findViewById(R.id.edimage);
+        img_image=dialog.findViewById(R.id.img_image);
         edChapter=dialog.findViewById(R.id.edchapter);
+        edt_status=dialog.findViewById(R.id.edstatus);
         btnCancel=dialog.findViewById(R.id.btnCancel);
         btnSave=dialog.findViewById(R.id.btnSave);
 
-
+        img_image.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/*");
+                startActivityForResult(intent, 1);
+            }
+        });
 
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -223,166 +258,76 @@ public class MainActivity extends AppCompatActivity {
                 dialog.dismiss();
             }
         });
+
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String name=edName.getText().toString();
                 String title=edTitle.getText().toString();
                 String chapter=edChapter.getText().toString();
-                String image=edImage.getText().toString();
+                String image="";
+                int status= Integer.valueOf(edt_status.getText().toString());
 
-                Comic comic=new Comic(title,name,chapter,image);
-                Call<List<Comic>> call=comicService.postComic(comic);
+
+
+                if (selectedImageUri!=null){
+                    image=String.valueOf(selectedImageUri);
+                }
+
+                Comic comic=new Comic(title,name,chapter,image,status);
+
+                Call<List<Comic>> call=comicService.addComic(comic);
 
                 call.enqueue(new Callback<List<Comic>>() {
                     @Override
                     public void onResponse(Call<List<Comic>> call, Response<List<Comic>> response) {
                         if (response.isSuccessful()){
-                            //loadData();
                             List<Comic> comicList=response.body();
                             comicAdapter.setComicList(comicList);
-                            Log.e("e", "Photo...." + comicList);
                             comicAdapter.notifyDataSetChanged();
-
                             Toast.makeText(getApplicationContext(),"Them comic thanh cong",Toast.LENGTH_LONG).show();
                             dialog.dismiss();
                         }else {
-
+                            int statusCode = response.code();
+                            Log.e("API Error", "Status Code: " + statusCode);
                         }
                     }
 
                     @Override
                     public void onFailure(Call<List<Comic>> call, Throwable t) {
-
+                        Log.e("API Error", "Request Failure: " + t.getMessage());
                     }
                 });
 
-            }
-        });
-        dialog.show();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_changepassword) {
-            changePassword();
-            return true;
-        } else if (id == R.id.action_logout) {
-
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-
-    private void changePassword(){
-        View dialogView = View.inflate(MainActivity.this,R.layout.dialog_chanepassword,null);
-        dialog = new Dialog(MainActivity.this);
-
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(dialogView);
-
-        Window window = dialog.getWindow();
-        window.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT);
-
-
-
-        edt_mkcu=dialog.findViewById(R.id.edt_mkcu);
-        edt_mkmoi=dialog.findViewById(R.id.edt_mkmoi);
-        edt_nhaplaimk= dialog.findViewById(R.id.edt_nhaplaimk);
-        Button btnRegister= dialog.findViewById(R.id.btn_register);
-        ImageButton img_Close=dialog.findViewById(R.id.img_Close);
-
-        img_Close.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
-        btnRegister.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                 email=getIntent().getStringExtra("email");
-                 oldpassword=edt_mkcu.getText().toString().trim();
-                 newpassword=edt_mkmoi.getText().toString().trim();
-                 renewpass=edt_nhaplaimk.getText().toString().trim();
-
-                if(validate(oldpassword,newpassword,renewpass)){
-                    changPass(email,newpassword);
-                }
 
             }
         });
         dialog.show();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-    public boolean validate(String oldpassword, String newpassword,String renewpass){
-        boolean check=true;
-        password=getIntent().getStringExtra("password");
-        if (!oldpassword.equals(password)){
-            edt_mkcu.setError("Mat khau khong trung khop");
-            edt_mkcu.requestFocus();
-            check=false;
+        if (requestCode == 1 && resultCode == RESULT_OK && data != null) {
+           selectedImageUri = data.getData();
+           Picasso.get().load(selectedImageUri).into(img_image);
         }
-        if (oldpassword.isEmpty()){
-            edt_mkcu.setError("Khong de trong truong nay");
-            edt_mkcu.requestFocus();
-            check=false;
-        }
-        if (newpassword.isEmpty()){
-            edt_mkmoi.setError("Khong de trong truong nay");
-            edt_mkmoi.requestFocus();
-            check=false;
-        }
-        if (renewpass.isEmpty()){
-            edt_nhaplaimk.setError("Khong de trong truong nay");
-            edt_nhaplaimk.requestFocus();
-            check=false;
-        }
-        if (!newpassword.equals(renewpass)){
-            edt_nhaplaimk.setError("Mat khau phai trung khop");
-            edt_nhaplaimk.requestFocus();
-            check=false;
-        }
-
-        return check;
     }
 
-    public void changPass(String email,String newpassword){
-
-        userService=getRetrofit().create(UserService.class);
-        Call<User> call=userService.getUser(email,password);
-        call.enqueue(new Callback<User>() {
-            @Override
-            public void onResponse(Call<User> call, Response<User> response) {
-            user=response.body();
-            user.setPassword(newpassword);
-
-            Log.e("eeee",user.toString());
-            userService.updateUser(user.getId(),user);
-            Toast.makeText(MainActivity.this,"Doi mk thanh cong",Toast.LENGTH_LONG).show();
-            dialog.dismiss();
+    public String getPathFromUri(Context context, Uri uri) {
+        String filePath = null;
+        if (uri.getScheme().equals("content")) {
+            Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME);
+                filePath = cursor.getString(columnIndex);
+                cursor.close();
             }
-
-            @Override
-            public void onFailure(Call<User> call, Throwable t) {
-
-            }
-        });
-
-
-
-
+        } else if (uri.getScheme().equals("file")) {
+            filePath = uri.getPath();
+        }
+        return filePath;
     }
 
 }

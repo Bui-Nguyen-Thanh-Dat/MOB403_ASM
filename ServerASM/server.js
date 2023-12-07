@@ -12,6 +12,8 @@ mongoose.connect(uri,{
     useUnifiedTopology: true,
 });
 
+const imagePath='./uploads';
+app.use('/uploads',express.static(imagePath));
 
 var apicomic= require('./Api/apiComic');
 app.use('/api/comic',apicomic);
